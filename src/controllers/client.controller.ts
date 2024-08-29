@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import Client from '../models/client.model';
+import {Client} from '../models';
+import {Professional} from '../models'
+import {ClientProfessional} from '../models'
 import { AuthenticatedRequest } from '../types/express';
 import { Op } from 'sequelize';
 
@@ -105,7 +107,7 @@ export const deleteClient = async (req: AuthenticatedRequest, res: Response) => 
 
     await client.destroy();
 
-    res.status(204).send({message: 'Cliente removido com sucesso'}); // No content
+    res.status(204).json({message: 'Cliente removido com sucesso'}); // No content
   } catch (error) {
     if (error instanceof Error){
         res.status(500).json({ message: 'Erro ao remover cliente', error: error.message });
@@ -113,6 +115,7 @@ export const deleteClient = async (req: AuthenticatedRequest, res: Response) => 
   }
 };
 
+//listar clientes
 export const listClients = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { user_id, role } = req.user!;
@@ -121,24 +124,57 @@ export const listClients = async (req: AuthenticatedRequest, res: Response) => {
     if (role === 'admin') {
       // Admin pode ver todos os clientes
       clients = await Client.findAll({
-        order:[
-          ['company_name','asc']
-        ]
+        order: [['company_name', 'asc']],
+        include: [
+          {
+            model: Professional,
+            through: { attributes: [] }, // Evita incluir dados da tabela intermediária
+          },
+        ],
       });
     } else {
       // Cliente só pode ver seus próprios clientes
-      clients = await Client.findAll({ 
-        order:[
-          ['company_name','asc']
-        ]
-        ,where: { user_id } },
-      );
+      clients = await Client.findAll({
+        where: { user_id },
+        order: [['company_name', 'asc']],
+        include: [
+          {
+            model: Professional,
+            through: { attributes: [] }, // Evita incluir dados da tabela intermediária
+          },
+        ],
+      });
     }
 
     res.status(200).json(clients);
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ message: 'Erro ao buscar clientes', error: error.message });
+    }
+  }
+};
+
+//Remover vinculo de um Profissional a um clinete (clinica) 
+export const removeProfessionalFromClient = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { client_id, professional_id } = req.params;
+
+    // Verifica se o vínculo existe
+    const clientProfessional = await ClientProfessional.findOne({
+      where: { client_id, professional_id },
+    });
+
+    if (!clientProfessional) {
+      return res.status(404).json({ message: 'Vínculo entre o cliente e o profissional não encontrado' });
+    }
+
+    // Remove o vínculo
+    await clientProfessional.destroy();
+
+    res.status(200).json({ message: 'Vínculo removido com sucesso' });
+  } catch (error) {
+    if (error instanceof Error) {
+      res.status(500).json({ message: 'Erro ao remover vínculo do profissional com o cliente', error: error.message });
     }
   }
 };

@@ -1,7 +1,5 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import sequelize from '../config/database';
-import { Client } from './client.model'; // Importação do modelo Client, se necessário
-import  ClientProfessional  from './clientProfessional.model'; // Importação do modelo ClientProfessional, se necessário
 
 // Define a interface para os atributos do modelo
 interface ProfessionalAttributes {
@@ -17,11 +15,11 @@ interface ProfessionalAttributes {
   }
   
   // Define a interface para criar novos registros
-  interface ProfessionalCreationAttributes
+export interface ProfessionalCreationAttributes
     extends Optional<ProfessionalAttributes, 'professional_id' | 'created_at' | 'updated_at'> {}
   
   // Define a classe do modelo
-  class Professional extends Model<ProfessionalAttributes, ProfessionalCreationAttributes>
+export class Professional extends Model<ProfessionalAttributes, ProfessionalCreationAttributes>
     implements ProfessionalAttributes {
     public professional_id!: number;
     public name!: string;
@@ -36,11 +34,7 @@ interface ProfessionalAttributes {
   // Definição das associações
   public static associate(models: any) {
     // Associações com a tabela Client através da tabela intermediária ClientProfessional
-    this.belongsToMany(models.Client, {
-      through: models.ClientProfessional,
-      foreignKey: 'professional_id',
-      as: 'clients', // Alias para facilitar a busca
-    });
+    
   }
 }
 
@@ -58,7 +52,6 @@ Professional.init(
       register_number: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        unique: true,
       },
       register_type: {
         type: DataTypes.STRING,

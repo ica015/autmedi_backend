@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import Professional from '../models/professional.model';
-import ClientProfessional from '../models/clientProfessional.model'; // Importa o modelo de relacionamento
+// import ClientProfessional from '../models/clientProfessional.model'; // Importa o modelo de relacionamento
 import { AuthenticatedRequest } from '../types/express'; // Tipo personalizado para requisições autenticadas
 import { Op } from 'sequelize';
-import Client from '../models/client.model';
+import {Client} from '../models';
+import {ClientProfessional} from '../models'
 
 interface ClientProfessionalEntry {
   client_id: number;
@@ -14,36 +15,64 @@ interface ClientProfessionalEntry {
 export const createProfessional = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { client_id, name, register_number, register_type, register_state, specialty_code, specialty_description } = req.body;
-    const { user_id } = req.user!;
+    const { user_id, role } = req.user!;
 
-    // Verifica se o número de registro já está cadastrado
-    const existingProfessional = await Professional.findOne({ where: { register_number } });
-    if (existingProfessional) {
-      return res.status(400).json({ message: 'Número de registro já cadastrado' });
-    }
-
-    // Cria o novo profissional
-    const professional = await Professional.create({
-      name,
-      register_number,
-      register_type,
-      register_state,
-      specialty_code,
-      specialty_description,
+    // Verifica se o número de registro já está associado a um cliente do usuário atual
+    const existingProfessional = await Professional.findOne({
+      include: {
+        model: ClientProfessional,
+        include: [{
+          model: Client,
+          where: { user_id }, // Filtra pelos clientes do usuário atual
+        }],
+      },
+      where: { register_number },
     });
 
-    // Associa o profissional ao cliente na tabela client_professionals
-    if (client_id) {
-      await ClientProfessional.create({
-        client_id,
-        professional_id: professional.professional_id,
+    if (existingProfessional) {
+      // Verifica se o profissional já está associado ao client_id fornecido
+      const existingAssociation = await ClientProfessional.findOne({
+        where: {
+          client_id,
+          professional_id: existingProfessional.professional_id,
+        },
       });
-    }
 
-    res.status(201).json(professional);
+      if (existingAssociation) {
+        return res.status(400).json({ message: 'Profissional já está associado a este cliente' });
+      } else {
+        // Associa o profissional existente ao novo cliente
+        await ClientProfessional.create({
+          client_id,
+          professional_id: existingProfessional.professional_id,
+        });
+
+        return res.status(201).json({ message: 'Profissional associado com sucesso ao cliente existente', professional: existingProfessional });
+      }
+    } else {
+      // Cria um novo profissional e associa ao cliente
+      const professional = await Professional.create({
+        name,
+        register_number,
+        register_type,
+        register_state,
+        specialty_code,
+        specialty_description,
+      });
+
+      // Associa o novo profissional ao cliente na tabela client_professionals
+      if (client_id) {
+        await ClientProfessional.create({
+          client_id,
+          professional_id: professional.professional_id,
+        });
+      }
+
+      return res.status(201).json(professional);
+    }
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ message: 'Erro ao criar profissional', error: error.message });
+      return res.status(500).json({ message: 'Erro ao criar profissional', error: error.message });
     }
   }
 };
@@ -52,24 +81,32 @@ export const createProfessional = async (req: AuthenticatedRequest, res: Respons
 export const listProfessionals = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { user_id } = req.user!;
-
     // Obtém os IDs dos clientes associados ao usuário
     const clientIds = await Client.findAll({
       where: { user_id },
       attributes: ['client_id'],
-    }).then(clients => clients.map(client => client.client_id));
+    }).then((clients: Client[]) => clients.map((client: Client) => client.client_id));
 
-    // Lista todos os profissionais associados aos clientes do usuário
+    // Se não houver clientes associados ao usuário, retorna uma lista vazia
+    if (clientIds.length === 0) {
+      return res.status(200).json([]);
+    }
+    // Obtém os IDs dos profissionais associados aos clientes
+    const professionalIds = await ClientProfessional.findAll({
+      where: { client_id: { [Op.in]: clientIds } },
+      attributes: ['professional_id'],
+    }).then((clientProfessionals: ClientProfessional[]) =>
+      clientProfessionals.map((cp: ClientProfessional) => cp.professional_id)
+    );
+
+    // Se não houver profissionais associados, retorna uma lista vazia
+    if (professionalIds.length === 0) {
+      return res.status(200).json([]);
+    }
+    // Lista todos os profissionais associados aos IDs obtidos
     const professionals = await Professional.findAll({
-      include: [
-        {
-          model: ClientProfessional,
-          as: 'professionals',
-          where: { client_id: { [Op.in]: clientIds } },
-        },
-      ],
+      where: { professional_id: { [Op.in]: professionalIds } },
     });
-
     res.status(200).json(professionals);
   } catch (error) {
     if (error instanceof Error) {
@@ -143,8 +180,8 @@ export const listProfessionalById = async (req: AuthenticatedRequest, res: Respo
       include: [
         {
           model: ClientProfessional,
-        //   attributes: ['client_id'],
-        as:'cliente'
+          attributes: ['client_id'],
+          // as:'cliente'
         },
       ],
     });

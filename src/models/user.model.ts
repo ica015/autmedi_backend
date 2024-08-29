@@ -8,8 +8,6 @@ export interface UserInstance extends Model<UserAttributes, UserCreationAttribut
   checkPassword: (password: string, callbackfn: checkPasswordCallBack) => void
 }
 
-
-
 interface UserAttributes {
   user_id: number;
   name: string;

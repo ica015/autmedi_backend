@@ -5,6 +5,7 @@ import {
   updateClient,
   deleteClient,
   listClients,
+  removeProfessionalFromClient,
 } from '../controllers/client.controller';
 import { isAuthenticated } from '../middlewares/auth.middleware';
 
@@ -24,5 +25,8 @@ router.delete('/:client_id', isAuthenticated, deleteClient);
 
 //rota para listar clientes
 router.get('/', isAuthenticated, listClients);
+
+//Rota para remover vinculo de profissional com cliente específico
+router.delete('/:client_id/professionals/:professional_id', isAuthenticated, removeProfessionalFromClient)
 
 export default router;

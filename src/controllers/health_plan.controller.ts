@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import  HealthPlan  from '../models/health_plan.model';
-import { AvailableHealthPlan } from '../models/available_health_plan.model';
+import  HealthPlan  from '../models/healthplan.model';
+import { AvailableHealthPlan } from '../models/availablehealthplan.model';
 import { AuthenticatedRequest } from '../types/express';
 import  Client  from '../models/client.model'
 

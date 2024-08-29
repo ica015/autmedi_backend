@@ -12,6 +12,9 @@ const sequelize = new Sequelize(
     port: parseInt(process.env.DB_PORT!, 10),
     dialect: 'postgres',
     logging: false, // Pode ser configurado como true para depuração
+    define:{
+      underscored: true
+    }
   },
 );
 

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import ClientProfessional from '../models/clientProfessional.model';
-import Professional from '../models/professional.model';
-import Client from '../models/client.model';
+import {ClientProfessional} from '../models';
+import {Professional} from '../models';
+import {Client} from '../models';
 
 import { AuthenticatedRequest } from '../types/express';
 

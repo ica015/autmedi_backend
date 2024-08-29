@@ -9,7 +9,7 @@ interface AvailableHealthPlanAttributes {
   updated_at?: Date;
 }
 
-interface AvailableHealthPlanCreationAttributes extends Optional<AvailableHealthPlanAttributes, 'plan_id'> {}
+interface AvailableHealthPlanCreationAttributes extends Optional<AvailableHealthPlanAttributes, 'plan_id' |'created_at' |'updated_at'> {}
 
 export class AvailableHealthPlan extends Model<AvailableHealthPlanAttributes, AvailableHealthPlanCreationAttributes> 
   implements AvailableHealthPlanAttributes {

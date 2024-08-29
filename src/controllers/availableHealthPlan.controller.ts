@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { AvailableHealthPlan } from '../models/available_health_plan.model';
+import { AvailableHealthPlan } from '../models';
 import { AuthenticatedRequest } from '../types/express';
 import { Op } from 'sequelize';
 

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model';
+import {User} from '../models';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/jwt';
 
 export const createUser = async (name: string, email: string, password: string, role: 'admin' | 'client') => {
