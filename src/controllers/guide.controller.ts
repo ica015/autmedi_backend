@@ -66,7 +66,7 @@ export const listGuides = async (req: AuthenticatedRequest, res: Response) => {
     // Monta os filtros para a consulta
     const where: any = {};
 
-    if (user!.role !== 'admin') {
+    if (user!.rule !== 'admin') {
       // Filtra por client_ids associados ao usuário autenticado
       const clientIds = await Client.findAll({
         where: { user_id: user!.user_id },
@@ -114,9 +114,9 @@ export const listGuides = async (req: AuthenticatedRequest, res: Response) => {
 //retornará a quantidade de guias separadas por cliente e profissional, filtrando os resultados para que o usuário só veja suas próprias guias.
 export const getClientSummary = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { role, user_id } = req.user!;
+    const { rule, user_id } = req.user!;
     
-    if (role !== 'client') {
+    if (rule !== 'client') {
       return res.status(403).json({ message: 'Acesso negado' });
     }
     
@@ -155,9 +155,9 @@ export const getClientSummary = async (req: AuthenticatedRequest, res: Response)
 //Esta rota retorna as estatísticas das guias separadas por cliente e plano de saúde, filtrando para que o usuário veja apenas suas próprias guias.
 export const getClientStats = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { role, user_id } = req.user!;
+    const { rule, user_id } = req.user!;
     
-    if (role !== 'client') {
+    if (rule !== 'client') {
       return res.status(403).json({ message: 'Acesso negado' });
     }
 
@@ -195,9 +195,9 @@ export const getClientStats = async (req: AuthenticatedRequest, res: Response) =
 //Esta rota retorna a quantidade total de guias, separada por cliente, plano de saúde, e profissional. Admins podem ver todas as guias.
 export const getAdminSummary = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { role } = req.user!;
+    const { rule } = req.user!;
     
-    if (role !== 'admin') {
+    if (rule !== 'admin') {
       return res.status(403).json({ message: 'Acesso negado' });
     }
 
@@ -241,10 +241,10 @@ export const getAdminSummary = async (req: AuthenticatedRequest, res: Response) 
 //Essa rota fornecerá estatísticas detalhadas sobre as guias criadas no sistema, permitindo que os administradores gerem relatórios com filtros específicos por cliente, plano de saúde e profissional.
 export const getAdminStats = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { role } = req.user!;
+    const { rule } = req.user!;
     const { client_id, plan_id, professional_id } = req.query;
     
-    if (role !== 'admin') {
+    if (rule !== 'admin') {
       return res.status(403).json({ message: 'Acesso negado' });
     }
 
@@ -311,7 +311,7 @@ export const countGuides = async (req: AuthenticatedRequest, res: Response) => {
   
       const where: any = {};
   
-      if (user!.role !== 'admin') {
+      if (user!.rule !== 'admin') {
         const clientIds = await Client.findAll({
           where: { user_id: user!.user_id },
           attributes: ['client_id'],

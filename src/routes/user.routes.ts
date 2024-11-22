@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { deleteUserById, fetchUserByEmail, fetchUserById, fetchUsers, updateUserById } from '../controllers/admin.controller';
+import { deleteUserById, fetchUserByEmail, fetchUserById, fetchUsers, updateUserById } from '../controllers/user.controller';
 import { isAdmin, isAuthenticated } from '../middlewares/auth.middleware';
 
 

@@ -21,7 +21,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      role: {
+      rule: {
         type: Sequelize.ENUM('admin', 'client'),
         allowNull: false,
       },

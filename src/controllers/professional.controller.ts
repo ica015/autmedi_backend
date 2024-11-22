@@ -15,7 +15,7 @@ interface ClientProfessionalEntry {
 export const createProfessional = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { client_id, name, register_number, register_type, register_state, specialty_code, specialty_description } = req.body;
-    const { user_id, role } = req.user!;
+    const { user_id, rule } = req.user!;
 
     // Verifica se o número de registro já está associado a um cliente do usuário atual
     const existingProfessional = await Professional.findOne({
@@ -80,38 +80,55 @@ export const createProfessional = async (req: AuthenticatedRequest, res: Respons
 // Função para listar todos os profissionais de um cliente
 export const listProfessionals = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { user_id } = req.user!;
-    // Obtém os IDs dos clientes associados ao usuário
-    const clientIds = await Client.findAll({
-      where: { user_id },
-      attributes: ['client_id'],
-    }).then((clients: Client[]) => clients.map((client: Client) => client.client_id));
+    const { rule, user_id } = req.user!;
 
-    // Se não houver clientes associados ao usuário, retorna uma lista vazia
-    if (clientIds.length === 0) {
-      return res.status(200).json([]);
+    if (rule === 'admin') {
+      // Administradores podem ver todos os profissionais
+      const professionals = await Professional.findAll();
+      return res.status(200).json(professionals);
     }
-    // Obtém os IDs dos profissionais associados aos clientes
-    const professionalIds = await ClientProfessional.findAll({
-      where: { client_id: { [Op.in]: clientIds } },
-      attributes: ['professional_id'],
-    }).then((clientProfessionals: ClientProfessional[]) =>
-      clientProfessionals.map((cp: ClientProfessional) => cp.professional_id)
-    );
 
-    // Se não houver profissionais associados, retorna uma lista vazia
-    if (professionalIds.length === 0) {
-      return res.status(200).json([]);
+    if (rule === 'client') {
+      // Obtém os IDs dos clientes associados ao usuário
+      const clientIds = await Client.findAll({
+        where: { user_id },
+        attributes: ['client_id'],
+      }).then((clients: Client[]) => clients.map((client: Client) => client.client_id));
+
+      // Se não houver clientes associados ao usuário, retorna uma lista vazia
+      if (clientIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      // Obtém os IDs dos profissionais associados aos clientes
+      const professionalIds = await ClientProfessional.findAll({
+        where: { client_id: { [Op.in]: clientIds } },
+        attributes: ['professional_id'],
+      }).then((clientProfessionals: ClientProfessional[]) =>
+        clientProfessionals.map((cp: ClientProfessional) => cp.professional_id)
+      );
+
+      // Se não houver profissionais associados, retorna uma lista vazia
+      if (professionalIds.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      // Lista os profissionais associados aos IDs obtidos
+      const professionals = await Professional.findAll({
+        where: { professional_id: { [Op.in]: professionalIds } },
+      });
+
+      return res.status(200).json(professionals);
     }
-    // Lista todos os profissionais associados aos IDs obtidos
-    const professionals = await Professional.findAll({
-      where: { professional_id: { [Op.in]: professionalIds } },
-    });
-    res.status(200).json(professionals);
+
+    // Se o usuário não for admin ou client, retorna um erro de acesso não autorizado
+    return res.status(403).json({ message: 'Acesso não autorizado' });
+
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ message: 'Erro ao listar profissionais', error: error.message });
+      return res.status(500).json({ message: 'Erro ao listar profissionais', error: error.message });
     }
+    return res.status(500).json({ message: 'Erro desconhecido' });
   }
 };
 

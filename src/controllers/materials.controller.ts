@@ -26,7 +26,7 @@ export const createMaterial = async (req: AuthenticatedRequest, res: Response) =
         }).then(clients => clients.map(client => client.client_id));
     
         // Verificar se o serviço pertence a um cliente do usuário
-        if (req.user!.role !== 'admin' && !clientIds.includes(service.client_id)) {
+        if (req.user!.rule !== 'admin' && !clientIds.includes(service.client_id)) {
           return res.status(403).json({ message: 'Acesso negado.' });
         }
     
@@ -53,7 +53,7 @@ export const getMaterials = async (req: AuthenticatedRequest, res: Response) => 
     const { user_id } = req.user!;
     const query: any = {};
 
-    if (req.user!.role !== 'admin') {
+    if (req.user!.rule !== 'admin') {
       // Apenas materiais relacionados aos serviços dos clientes do usuário
       const clientIds = await Client.findAll({
         where: { user_id },
@@ -94,7 +94,7 @@ export const getMaterialById = async (req: AuthenticatedRequest, res: Response) 
     
         // Obter o serviço associado ao material
         const service = await Service.findByPk(material.service_id);
-        if (!service || (req.user!.role !== 'admin' && !(await Client.findOne({ where: { client_id: service.client_id, user_id } })))) {
+        if (!service || (req.user!.rule !== 'admin' && !(await Client.findOne({ where: { client_id: service.client_id, user_id } })))) {
           return res.status(403).json({ message: 'Acesso negado.' });
         }
     
@@ -127,7 +127,7 @@ export const updateMaterial = async (req: AuthenticatedRequest, res: Response) =
     
         // Obter o serviço associado ao material
         const service = await Service.findByPk(service_id);
-        if (!service || (req.user!.role !== 'admin' && !clientIds.includes(service.client_id))) {
+        if (!service || (req.user!.rule !== 'admin' && !clientIds.includes(service.client_id))) {
           return res.status(403).json({ message: 'Acesso negado.' });
         }
     
@@ -162,7 +162,7 @@ export const deleteMaterial = async (req: AuthenticatedRequest, res: Response) =
     
         // Obter o serviço associado ao material
         const service = await Service.findByPk(material.service_id);
-        if (!service || (req.user!.role !== 'admin' && !(await Client.findOne({ where: { client_id: service.client_id, user_id } })))) {
+        if (!service || (req.user!.rule !== 'admin' && !(await Client.findOne({ where: { client_id: service.client_id, user_id } })))) {
           return res.status(403).json({ message: 'Acesso negado.' });
         }
     

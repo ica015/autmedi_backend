@@ -12,7 +12,7 @@ export const createService = async (req: AuthenticatedRequest, res: Response) =>
     const { client_id, professional_id, plan_id, service_name, tuss_code, tuss_description, price } = req.body;
 
     // Verifica se o usuário tem permissão para criar o serviço
-    if (req.user!.role !== 'admin') {
+    if (req.user!.rule !== 'admin') {
       // Permitir criar serviço apenas se o cliente estiver associado ao usuário
       const client = await Client.findOne({ where: { client_id, user_id: req.user!.user_id } });
       if (!client) {
@@ -41,7 +41,7 @@ export const createService = async (req: AuthenticatedRequest, res: Response) =>
 // Função para listar todos os serviços ou serviços específicos para o usuário
 export const listServices = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    if (req.user!.role === 'admin') {
+    if (req.user!.rule === 'admin') {
       // Admin pode acessar todos os serviços
       const services = await Service.findAll({
         include: [
@@ -96,7 +96,7 @@ export const getServiceById = async (req: AuthenticatedRequest, res: Response) =
     }
 
     // Verifica permissão para acessar o serviço
-    if (req.user!.role !== 'admin') {
+    if (req.user!.rule !== 'admin') {
       // Obtém os IDs dos clientes associados ao usuário
       const clientIds = await Client.findAll({
         where: { user_id: req.user!.user_id },
@@ -137,7 +137,7 @@ export const updateService = async (req: AuthenticatedRequest, res: Response) =>
     }).then(clients => clients.map(client => client.client_id));
 
     // Verificar se o serviço pertence a um cliente associado ao usuário
-    if (req.user!.role !== 'admin' && !clientIds.includes(service.client_id)) {
+    if (req.user!.rule !== 'admin' && !clientIds.includes(service.client_id)) {
       return res.status(403).json({ message: 'Acesso negado.' });
     }
 
@@ -179,7 +179,7 @@ export const deleteService = async (req: AuthenticatedRequest, res: Response) =>
     }).then(clients => clients.map(client => client.client_id));
 
     // Verificar se o serviço pertence a um cliente associado ao usuário
-    if (req.user!.role !== 'admin' && !clientIds.includes(service.client_id)) {
+    if (req.user!.rule !== 'admin' && !clientIds.includes(service.client_id)) {
       return res.status(403).json({ message: 'Acesso negado.' });
     }
 

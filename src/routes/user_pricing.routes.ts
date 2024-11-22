@@ -8,15 +8,15 @@ const router = Router();
 router.post('/', isAdmin, createUserPricing);
 
 // Rota para buscar fatura por ID
-router.get('/:id', isAuthenticated, getUserPricingById);
+router.get('/:user_pricing_id', isAuthenticated, getUserPricingById);
 
 // Rota para atualizar uma fatura
-router.put('/:id', isAdmin, updateUserPricing);
+router.put('/:user_pricing_id', isAdmin, updateUserPricing);
 
 // Rota para excluir uma fatura
-router.delete('/:id', isAdmin, deleteUserPricing);
+router.delete('/:user_pricing_id', isAdmin, deleteUserPricing);
 
 // Rota para listar faturas com filtros
-router.get('/', isAdmin, listUserPricing);
+router.get('/', isAuthenticated, listUserPricing);
 
 export default router;

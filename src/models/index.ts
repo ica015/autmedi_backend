@@ -7,6 +7,8 @@ import  {Service}  from './service.model';
 import {ClientProfessional} from './clientProfessional.model'
 import {Guide} from './guide.model';
 import {Material} from './material.model';
+import UserPricing from './userpricing.model';
+import { PricingRule } from './pricinRule.model';
 
 //Criando as associações
 User.hasMany(Client, {foreignKey:'user_id'})
@@ -52,7 +54,14 @@ Service.belongsTo(Client, { foreignKey: 'client_id', as: 'client' });
 Service.belongsTo(Professional, { foreignKey: 'professional_id', as: 'professional' });
 Service.belongsTo(HealthPlan, { foreignKey: 'plan_id', as: 'healthPlan' });
 
-
+// User.hasMany(PricingRule, {
+//   foreignKey: 'user_id',
+//   as: 'pricingRules',
+// });
+PricingRule.belongsTo(User, {
+  foreignKey: 'user_id',
+  // as: 'User',
+});
 
 
 export {
@@ -64,8 +73,9 @@ export {
   Service,
   ClientProfessional,
   Guide,
-  Material
-
+  Material,
+  UserPricing,
+  PricingRule
 }
 
 // import fs from 'fs';

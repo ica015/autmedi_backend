@@ -49,7 +49,7 @@ export const createClient = async (req: AuthenticatedRequest, res: Response) => 
 export const getClientById = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { client_id } = req.params;
-    const { user_id, role } = req.user!; // ID do usuário autenticado
+    const { user_id, rule } = req.user!; // ID do usuário autenticado
 
     const client = await Client.findOne({ where: { client_id, user_id } });
     if (!client) {
@@ -68,12 +68,12 @@ export const getClientById = async (req: AuthenticatedRequest, res: Response) =>
 export const updateClient = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { client_id } = req.params;
-    const { user_id, role } = req.user!;
+    const { user_id, rule } = req.user!;
     const updateData = req.body;
 
     let client;
 
-    if (role === 'admin') {
+    if (rule === 'admin') {
       // Admin pode atualizar qualquer cliente
       client = await Client.findOne({ where: { client_id } });
     } else {
@@ -118,10 +118,10 @@ export const deleteClient = async (req: AuthenticatedRequest, res: Response) => 
 //listar clientes
 export const listClients = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { user_id, role } = req.user!;
+    const { user_id, rule } = req.user!;
 
     let clients;
-    if (role === 'admin') {
+    if (rule === 'admin') {
       // Admin pode ver todos os clientes
       clients = await Client.findAll({
         order: [['company_name', 'asc']],

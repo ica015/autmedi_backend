@@ -11,13 +11,14 @@ interface UserPricingAttributes {
   contract_start_date: Date;
   contract_end_date: Date;
   transaction_id: string;
+  comments?: string; // Novo campo opcional
   status: 'paid' | 'pending' | 'late'; // Adicionado 'late'
   created_at?: Date;
   updated_at?: Date;
 }
 
 // Definição dos atributos opcionais para criação e atualização
-export interface UserPricingCreationAttributes extends Optional<UserPricingAttributes, 'payment_id' | 'created_at' | 'updated_at'> {}
+export interface UserPricingCreationAttributes extends Optional<UserPricingAttributes, 'payment_id' | 'payment_date' | 'comments' | 'created_at' | 'updated_at'> {}
 
 // Modelo UserPricing
 export class UserPricing extends Model<UserPricingAttributes, UserPricingCreationAttributes> implements UserPricingAttributes {
@@ -29,6 +30,7 @@ export class UserPricing extends Model<UserPricingAttributes, UserPricingCreatio
   public contract_start_date!: Date;
   public contract_end_date!: Date;
   public transaction_id!: string;
+  public comments?: string; // Novo campo opcional
   public status!: 'paid' | 'pending' | 'late'; // Adicionado 'late'
   public created_at!: Date;
   public updated_at!: Date;
@@ -57,7 +59,7 @@ UserPricing.init(
     },
     payment_date: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     due_date: {
       type: DataTypes.DATE,
@@ -74,6 +76,10 @@ UserPricing.init(
     transaction_id: {
       type: DataTypes.STRING(100),
       allowNull: false,
+    },
+    comments: {
+      type: DataTypes.TEXT, // Novo campo opcional
+      allowNull: true,
     },
     status: {
       type: DataTypes.ENUM('paid', 'pending', 'late'), // Adicionado 'late'
